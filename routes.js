@@ -24,8 +24,11 @@
 // hwOffsetMin:  minutes to ADD to refStation HW time to get local HW time
 // alatOffset:   metres LAT/GLLWS is BELOW NAP (chart datum offset)
 const PORTS = [
-  { id: 'denhelder',         name: 'Den Helder',           loc: 'denhelder',   refStation: 'denhelder',  hwOffsetMin:   0, alatOffset: 0.87 },
-  { id: 'oudeschild',        name: 'Oudeschild (Texel)',    loc: null,          refStation: 'denhelder',  hwOffsetMin:  15, alatOffset: 0.90 },
+  { id: 'scheveningen',      name: 'Scheveningen',          loc: 'Scheveningen',      refStation: 'Scheveningen',      hwOffsetMin:   0, alatOffset: 0.80 },
+  { id: 'ijmuiden',          name: 'IJmuiden',              loc: 'IJmuiden',          refStation: 'IJmuiden',          hwOffsetMin:   0, alatOffset: 0.80 },
+  { id: 'denhelder',         name: 'Den Helder',            loc: 'denhelder',         refStation: 'denhelder',         hwOffsetMin:   0, alatOffset: 0.87 },
+  { id: 'den-oever',         name: 'Den Oever',             loc: 'den oever buiten',  refStation: 'den oever buiten',  hwOffsetMin:   0, alatOffset: 0.87 },
+  { id: 'oudeschild',        name: 'Oudeschild (Texel)',    loc: null,                refStation: 'denhelder',         hwOffsetMin:  15, alatOffset: 0.90 },
   { id: 'oost-vlieland',     name: 'Oost-Vlieland',        loc: 'vlieland haven', refStation: 'vlieland haven', hwOffsetMin: 0, alatOffset: 0.90 },
   { id: 'west-terschelling', name: 'West-Terschelling',    loc: null,          refStation: 'harlingen',  hwOffsetMin: -45, alatOffset: 1.05 },
   { id: 'harlingen',         name: 'Harlingen',             loc: 'harlingen',   refStation: 'harlingen',  hwOffsetMin:   0, alatOffset: 1.10 },
@@ -37,8 +40,11 @@ const PORTS = [
 
 // ALAT offset per Matroos reference station (for tidal overview display)
 const STATION_ALAT = {
-  denhelder:  0.87,
-  'vlieland haven': 0.90,
+  Scheveningen:       0.80,
+  IJmuiden:           0.80,
+  denhelder:          0.87,
+  'den oever buiten': 0.87,
+  'vlieland haven':   0.90,
   harlingen:  1.10,
   lauwersoog: 1.05,
   delfzijl:   1.30,
@@ -56,15 +62,34 @@ const STATION_ALAT = {
 // Example: refStartTide:'LW', startOffset:+2, refEndTide:'HW', endOffset:+1
 //   → window opens 2h after LW and closes 1h after the following HW
 const ROUTES = [
+  // ── Scheveningen vertrek ─────────────────────────────────────────────────
+  { from: 'scheveningen', to: 'ijmuiden',   refStation: 'Scheveningen', refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  5, via: 'Noordzee kust', comment: 'Vloed mee richting noorden; tijdvenster bij benadering.' },
+  { from: 'scheveningen', to: 'denhelder',  refStation: 'Scheveningen', refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  5, via: 'Noordzee kust', comment: 'Vloed mee richting noorden; tijdvenster bij benadering.' },
+
+  // ── IJmuiden vertrek ──────────────────────────────────────────────────────
+  { from: 'ijmuiden', to: 'scheveningen',   refStation: 'IJmuiden',     refStartTide: 'HW', startOffset:  0, refEndTide: 'HW', endOffset:  6, via: 'Noordzee kust', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
+  { from: 'ijmuiden', to: 'denhelder',      refStation: 'IJmuiden',     refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  4, via: 'Noordzee kust', comment: 'Vloed mee richting noorden; tijdvenster bij benadering.' },
+  { from: 'ijmuiden', to: 'den-oever',      refStation: 'IJmuiden',     refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  4, via: 'Noordzee kust / Amsteldiep', comment: 'Tijdvenster bij benadering.' },
+
+  // ── Den Helder vertrek → kust ─────────────────────────────────────────────
+  { from: 'denhelder', to: 'ijmuiden',      refStation: 'denhelder',    refStartTide: 'HW', startOffset:  0, refEndTide: 'HW', endOffset:  6, via: 'Noordzee kust', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
+  { from: 'denhelder', to: 'scheveningen',  refStation: 'denhelder',    refStartTide: 'HW', startOffset:  0, refEndTide: 'HW', endOffset:  6, via: 'Noordzee kust', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
+
+  // ── Den Oever vertrek ────────────────────────────────────────────────────
+  { from: 'den-oever', to: 'denhelder',   refStation: 'den oever buiten', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  4, via: 'Amsteldiep / Texelstroom' },
+  { from: 'den-oever', to: 'oudeschild',  refStation: 'den oever buiten', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  3, via: 'Amsteldiep / Texelstroom' },
+
   // ── Den Helder vertrek ────────────────────────────────────────────────────
-  { from: 'denhelder',         to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'LW', startOffset: -1, refEndTide: 'LW', endOffset:  3, via: 'Marsdiep / Texelstroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: 'Ik weet niet of het klopt.'},
-  { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -1, via: 'Texelstroom / Vliestroom' },
-  { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -6, refEndTide: 'HW', endOffset:  -6, via: 'Molengat (buitenom)' },
-  { from: 'denhelder',         to: 'west-terschelling',  refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  1, via: 'Vliestroom' },
+  { from: 'denhelder', to: 'den-oever',   refStation: 'denhelder',        refStartTide: 'HW', startOffset: -4, refEndTide: 'HW', endOffset:  2, via: 'Texelstroom / Amsteldiep' },
+  { from: 'denhelder',         to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'LW', startOffset: -1, refEndTide: 'LW', endOffset:  3, via: 'Marsdiep / Texelstroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -1, via: 'Texelstroom / Vliestroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -6, refEndTide: 'HW', endOffset:  -6, via: 'Molengat (buitenom)' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'denhelder',         to: 'west-terschelling',  refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  1, via: 'Vliestroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
   { from: 'denhelder',         to: 'harlingen',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  0, via: 'Vliestroom / Zuider Stortemelk' },
 
   // ── Oudeschild (Texel) vertrek ────────────────────────────────────────────
   { from: 'oudeschild',        to: 'denhelder',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -5, refEndTide: 'HW', endOffset:  1, via: 'Texelstroom / Marsdiep' },
+  { from: 'oudeschild',        to: 'den-oever',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  2, via: 'Texelstroom / Amsteldiep' },
   { from: 'oudeschild',        to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
   { from: 'oudeschild',        to: 'west-terschelling',  refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Vliestroom' },
   { from: 'oudeschild',        to: 'harlingen',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  0, via: 'Vliestroom' },
