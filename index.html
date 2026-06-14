@@ -725,58 +725,83 @@ async function fetchStationData(loc, date) {
 }
 
 // ─── DEPARTURE WINDOW CALCULATION ────────────────────────────────────────────
-// For a route, find all departure windows on the selected date.
-// Each window is anchored by two independent tidal events (HW or LW):
-//   windowOpen  = startEvent.time + route.startOffset hours
-//   windowClose = endEvent.time   + route.endOffset hours
-// The endEvent is the first extremum of type refEndTide that occurs at or after
-// the startEvent (same event when refStartTide === refEndTide).
+// Each window is anchored by two tidal events:
+//   windowOpen  = startEvent.time + startOffset hours
+//   windowClose = endEvent.time   + endOffset hours
+//
+// endEvent selection when refStartTide === refEndTide:
+//   If endOffset > startOffset the window fits within one tidal cycle → same event.
+//   Otherwise (equal or inverted offsets) the window spans into the next cycle →
+//   use the next occurrence of refEndTide after startEvent.
 function calcDepartureWindows(route, refExtrema, selectedDate) {
   const dayStart = new Date(selectedDate + 'T00:00:00+01:00');
   const dayEnd   = new Date(selectedDate + 'T23:59:59+01:00');
 
   const windows = [];
 
-  // Iterate over every extremum that matches refStartTide
+  // Equal offsets on the same tide type → one departure moment per tide event
+  const isMomentRoute = route.refStartTide === route.refEndTide &&
+                        route.startOffset   === route.endOffset;
+
+  if (isMomentRoute) {
+    for (const ev of refExtrema) {
+      if (ev.type !== route.refStartTide) continue;
+      const moment = addHours(ev.time, route.startOffset);
+      if (moment < dayStart || moment > dayEnd) continue;
+      windows.push({
+        startEvent: ev,
+        endEvent:   ev,
+        windowStart:  moment,
+        windowEnd:    moment,
+        durationMin:  0,
+        isPartial:    false,
+        bestDeparture: moment,
+        isMoment: true,
+      });
+    }
+    return windows;
+  }
+
   for (const startEvent of refExtrema) {
     if (startEvent.type !== route.refStartTide) continue;
 
     const windowStart = addHours(startEvent.time, route.startOffset);
 
-    // Find the nearest refEndTide event at or after startEvent
-    const endEvent = refExtrema.find(e =>
-      e.type === route.refEndTide &&
-      e.time >= startEvent.time &&
-      (route.refStartTide !== route.refEndTide || e !== startEvent)
-    );
-    // When both anchors are the same tide type the end event IS the start event
-    const resolvedEnd = (route.refStartTide === route.refEndTide)
-      ? startEvent
-      : endEvent;
-    if (!resolvedEnd) continue;
+    let endEvent;
+    if (route.refStartTide === route.refEndTide) {
+      // Same tide type, different offsets: fits within one cycle when endOffset > startOffset,
+      // otherwise spans into the next cycle.
+      if (route.endOffset > route.startOffset) {
+        endEvent = startEvent;
+      } else {
+        endEvent = refExtrema.find(e => e.type === route.refEndTide && e.time > startEvent.time);
+      }
+    } else {
+      endEvent = refExtrema.find(e => e.type === route.refEndTide && e.time >= startEvent.time);
+    }
+    if (!endEvent) continue;
 
-    const windowEnd = addHours(resolvedEnd.time, route.endOffset);
+    const windowEnd = addHours(endEvent.time, route.endOffset);
     if (windowEnd <= windowStart) continue;
 
-    // Only include windows that overlap with the calendar day
     if (windowEnd < dayStart || windowStart > dayEnd) continue;
 
     const clampedStart = windowStart < dayStart ? dayStart : windowStart;
     const clampedEnd   = windowEnd   > dayEnd   ? dayEnd   : windowEnd;
 
-    // Best departure: 30 % into the unclamped window
     const bestDep = new Date(
       windowStart.getTime() + 0.3 * (windowEnd.getTime() - windowStart.getTime())
     );
 
     windows.push({
       startEvent,
-      endEvent: resolvedEnd,
+      endEvent,
       windowStart: clampedStart,
       windowEnd:   clampedEnd,
       durationMin: Math.round((clampedEnd - clampedStart) / 60000),
       isPartial:   windowStart < dayStart || windowEnd > dayEnd,
       bestDeparture: bestDep,
+      isMoment: false,
     });
   }
 
@@ -1014,19 +1039,32 @@ function renderResults(dep, myRoutes, fetchedData, errors, dateVal) {
     const windowRule = `${route.refStartTide} ${fmtOffset(route.startOffset)} tot ${route.refEndTide} ${fmtOffset(route.endOffset)}`;
 
     const stationAlat = STATION_ALAT[route.refStation] || 0;
+    const fmtEvent = (ev) => {
+      let s = `${ev.type} ${fmtTime(ev.time)}`;
+      if (ev.value != null) {
+        const nap  = `${ev.value >= 0 ? '+' : ''}${ev.value.toFixed(2)}m NAP`;
+        const alat = `+${(ev.value + stationAlat).toFixed(2)}m ALAT`;
+        s += ` (${nap} / ${alat})`;
+      }
+      return s;
+    };
+
     const windowItems = windows.map(w => {
-      const fmtEvent = (ev) => {
-        let s = `${ev.type} ${fmtTime(ev.time)}`;
-        if (ev.value != null) {
-          const nap  = `${ev.value >= 0 ? '+' : ''}${ev.value.toFixed(2)}m NAP`;
-          const alat = `+${(ev.value + stationAlat).toFixed(2)}m ALAT`;
-          s += ` (${nap} / ${alat})`;
-        }
-        return s;
-      };
       const anchorStr = w.startEvent === w.endEvent
         ? fmtEvent(w.startEvent)
         : `${fmtEvent(w.startEvent)} → ${fmtEvent(w.endEvent)}`;
+      const ref = stationNames[route.refStation] || route.refStation;
+
+      if (w.isMoment) {
+        return `<li class="window-item">
+          <div class="window-times">${fmtTime(w.windowStart)}</div>
+          <div class="window-detail">
+            <strong>${anchorStr}</strong><br>
+            ref: ${ref}
+          </div>
+        </li>`;
+      }
+
       const durH = Math.floor(w.durationMin / 60);
       const durM = w.durationMin % 60;
       const durStr = durH > 0 ? `${durH}u${durM > 0 ? ` ${durM}m` : ''}` : `${durM}m`;
@@ -1040,10 +1078,17 @@ function renderResults(dep, myRoutes, fetchedData, errors, dateVal) {
         </div>
         <div class="window-detail">
           <strong>${anchorStr}</strong>${partial}<br>
-          Duur: ${durStr} · ref: ${stationNames[route.refStation] || route.refStation}
+          Duur: ${durStr} · ref: ${ref}
         </div>
       </li>${best}`;
     }).join('');
+
+    const commentHtml = route.comment
+      ? `<div style="font-size:.82rem;color:var(--text-light);margin-bottom:.6rem;font-style:italic">${route.comment}</div>`
+      : '';
+    const sourceHtml = route.source
+      ? `<div style="font-size:.75rem;margin-top:.6rem"><a href="${route.source}" target="_blank" rel="noopener" style="color:var(--sea-light)">↗ Bron</a></div>`
+      : '';
 
     return `<div class="route-card ${cardClass}">
       <div class="route-card-header">
@@ -1057,7 +1102,9 @@ function renderResults(dep, myRoutes, fetchedData, errors, dateVal) {
         <div style="font-size:.8rem;color:var(--text-light);margin-bottom:.8rem">
           Vertrekvenster: <strong>${windowRule}</strong>
         </div>
+        ${commentHtml}
         <ul class="window-list">${windowItems}</ul>
+        ${sourceHtml}
       </div>
     </div>`;
   }).join('');
