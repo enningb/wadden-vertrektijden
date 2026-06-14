@@ -26,7 +26,7 @@
 const PORTS = [
   { id: 'denhelder',         name: 'Den Helder',           loc: 'denhelder',   refStation: 'denhelder',  hwOffsetMin:   0, alatOffset: 0.87 },
   { id: 'oudeschild',        name: 'Oudeschild (Texel)',    loc: null,          refStation: 'denhelder',  hwOffsetMin:  15, alatOffset: 0.90 },
-  { id: 'oost-vlieland',     name: 'Oost-Vlieland',        loc: 'vlieland',    refStation: 'vlieland',   hwOffsetMin:   0, alatOffset: 0.90 },
+  { id: 'oost-vlieland',     name: 'Oost-Vlieland',        loc: 'vlieland haven', refStation: 'vlieland haven', hwOffsetMin: 0, alatOffset: 0.90 },
   { id: 'west-terschelling', name: 'West-Terschelling',    loc: null,          refStation: 'harlingen',  hwOffsetMin: -45, alatOffset: 1.05 },
   { id: 'harlingen',         name: 'Harlingen',             loc: 'harlingen',   refStation: 'harlingen',  hwOffsetMin:   0, alatOffset: 1.10 },
   { id: 'nes',               name: 'Nes (Ameland)',         loc: null,          refStation: 'harlingen',  hwOffsetMin:  40, alatOffset: 1.05 },
@@ -38,7 +38,7 @@ const PORTS = [
 // ALAT offset per Matroos reference station (for tidal overview display)
 const STATION_ALAT = {
   denhelder:  0.87,
-  vlieland:   0.90,
+  'vlieland haven': 0.90,
   harlingen:  1.10,
   lauwersoog: 1.05,
   delfzijl:   1.30,
