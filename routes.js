@@ -89,18 +89,51 @@ const ROUTES = [
   { from: 'denhelder',         to: 'ijmuiden',      refStation: 'denhelder',    refStartTide: 'HW', startOffset:  1, refEndTide: 'HW', endOffset:  1, via: 'Schulpengat en Noordzee kust', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
   { from: 'denhelder',         to: 'scheveningen',  refStation: 'denhelder',    refStartTide: 'HW', startOffset:  1, refEndTide: 'HW', endOffset:  1, via: 'Schulpengat en Noordzee kust', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
   { from: 'denhelder',         to: 'den-oever',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -4, refEndTide: 'HW', endOffset:  -2, via: 'Malzwin en Visjagersgaatje', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'denhelder',         to: 'kornwerderzand',     refStation: 'denhelder',  refStartTide: 'HW', startOffset: -5, refEndTide: 'HW', endOffset:  -5, via: 'Texelstroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
   { from: 'denhelder',         to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'LW', startOffset: -1, refEndTide: 'LW', endOffset:  3, via: 'Marsdiep / Texelstroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
-  { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -1, via: 'Texelstroom / Vliestroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -2, via: 'Scheurrak' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
   { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -6, refEndTide: 'HW', endOffset:  -6, via: 'Molengat (buitenom)' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
-  { from: 'denhelder',         to: 'west-terschelling',  refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  1, via: 'Vliestroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
-  { from: 'denhelder',         to: 'harlingen',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  0, via: 'Vliestroom / Zuider Stortemelk' },
+  { from: 'denhelder',         to: 'harlingen',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -5, refEndTide: 'HW', endOffset:  -5, via: 'Texelstroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
 
   // ── Oudeschild (Texel) vertrek ────────────────────────────────────────────
-  { from: 'oudeschild',        to: 'denhelder',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -5, refEndTide: 'HW', endOffset:  1, via: 'Texelstroom / Marsdiep' },
-  { from: 'oudeschild',        to: 'den-oever',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  2, via: 'Texelstroom / Amsteldiep' },
-  { from: 'oudeschild',        to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
-  { from: 'oudeschild',        to: 'west-terschelling',  refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Vliestroom' },
-  { from: 'oudeschild',        to: 'harlingen',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  0, via: 'Vliestroom' },
+  { from: 'oudeschild',        to: 'ijmuiden',           refStation: 'oudeschild',  refStartTide: 'HW', startOffset: -0.5, refEndTide: 'HW', endOffset: -0.5, via: 'Schulpengat' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'oudeschild',        to: 'scheveningen',       refStation: 'oudeschild',  refStartTide: 'HW', startOffset: -0.5, refEndTide: 'HW', endOffset: -0.5, via: 'Schulpengat' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'oudeschild',        to: 'den-oever',          refStation: 'oudeschild',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -2, via: 'De Bollen', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'oudeschild',        to: 'den-oever',          refStation: 'oudeschild',  refStartTide: 'LW', startOffset: -0.5, refEndTide: 'LW', endOffset:  -0.5, via: 'De Bollen', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'oudeschild',        to: 'kornwerderzand',     refStation: 'oudeschild',  refStartTide: 'LW', startOffset: 1, refEndTide: 'LW', endOffset:  3, via: 'Texelstroom', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'oudeschild',        to: 'harlingen',          refStation: 'oudeschild',  refStartTide: 'LW', startOffset: 1, refEndTide: 'LW', endOffset:  2, via: 'Texelstroom', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'oudeschild',        to: 'oost-vlieland',      refStation: 'oudeschild',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -2, via: 'Scheurrak', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
+  { from: 'oudeschild',        to: 'oost-vlieland',      refStation: 'oudeschild',  refStartTide: 'LW', startOffset: -1, refEndTide: 'LW', endOffset:  -1, via: 'Molengat (buitenom)', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'oudeschild',        to: 'terschelling',      refStation: 'oudeschild',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -2, via: 'Scheurrak', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: 'idem als Vlieland' },
+  { from: 'oudeschild',        to: 'terschelling',      refStation: 'oudeschild',  refStartTide: 'LW', startOffset: -1, refEndTide: 'LW', endOffset:  -1, via: 'Molengat (buitenom)', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: 'idem als Vlieland' },
+  { from: 'oudeschild',        to: 'denhelder',          refStation: 'oudeschild',  refStartTide: 'LW', startOffset: -5, refEndTide: 'LW', endOffset:  0, via: 'Texelstroom', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+
+// ── Oost-Vlieland vertrek ─────────────────────────────────────────────────
+  { from: 'oost-vlieland',     to: 'west-terschelling',  refStation: 'oost-vlieland',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  -1, via: 'Schuitengat', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''  },
+  { from: 'oost-vlieland',     to: 'west-terschelling',  refStation: 'oost-vlieland',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  -1, via: 'Slenk', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'oost-vlieland',     to: 'denhelder',          refStation: 'oost-vlieland',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -2, via: 'Inschot', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'oost-vlieland',     to: 'denhelder',          refStation: 'oost-vlieland',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  -1, via: 'Noordzee', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'oost-vlieland',     to: 'oudeschild',         refStation: 'oost-vlieland',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -2, via: 'Inschot', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'oost-vlieland',     to: 'oudeschild',         refStation: 'oost-vlieland',  refStartTide: 'HW', startOffset: 0.5, refEndTide: 'HW', endOffset:  0.5, via: 'Noorzee', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'oost-vlieland',     to: 'harlingen',          refStation: 'oost-vlieland',  refStartTide: 'LW', startOffset: 2, refEndTide: 'LW', endOffset:  2, via: 'Blauwe Slenk', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'oost-vlieland',     to: 'kornwerderzand',     refStation: 'oost-vlieland',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -1, via: 'Boontjes', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
+  { from: 'oost-vlieland',     to: 'kornwerderzand',     refStation: 'oost-vlieland',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  -3, via: 'Inschot', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' }
+
+
+  // ── West-Terschelling vertrek ─────────────────────────────────────────────
+  { from: 'west-terschelling', to: 'oost-vlieland',      refStation: 'west-terschelling',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset: -1, via: 'Schuitengat' },
+  { from: 'west-terschelling', to: 'oost-vlieland',      refStation: 'west-terschelling',  refStartTide: 'LW', startOffset: -2, refEndTide: 'LW', endOffset:  -2, via: 'Slenk' },
+  { from: 'west-terschelling', to: 'denhelder',          refStation: 'west-terschelling',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  -1, via: 'Schuitengat via Noordzee' },
+  { from: 'west-terschelling', to: 'denhelder',          refStation: 'west-terschelling',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -2, via: 'Slenk via Noordzee' },
+
+  { from: 'west-terschelling', to: 'oudeschild',         refStation: 'west-terschelling',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  -3, via: 'Vliestroom' },
+
+  { from: 'west-terschelling', to: 'nes',                refStation: 'west-terschelling',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Boontjesroute' },
+  { from: 'west-terschelling', to: 'lauwersoog',         refStation: 'west-terschelling',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Zoutkamperlaag' }
+  
+  
+
+
 
   // ── Harlingen vertrek ─────────────────────────────────────────────────────
   { from: 'harlingen',         to: 'west-terschelling',  refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
@@ -110,19 +143,7 @@ const ROUTES = [
   { from: 'harlingen',         to: 'denhelder',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom' },
   { from: 'harlingen',         to: 'oudeschild',         refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom' },
 
-  // ── Oost-Vlieland vertrek ─────────────────────────────────────────────────
-  { from: 'oost-vlieland',     to: 'denhelder',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom / Texelstroom' },
-  { from: 'oost-vlieland',     to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
-  { from: 'oost-vlieland',     to: 'west-terschelling',  refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom' },
-  { from: 'oost-vlieland',     to: 'harlingen',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Blauwe Slenk' },
-
-  // ── West-Terschelling vertrek ─────────────────────────────────────────────
-  { from: 'west-terschelling', to: 'harlingen',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
-  { from: 'west-terschelling', to: 'oost-vlieland',      refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom' },
-  { from: 'west-terschelling', to: 'nes',                refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Boontjesroute' },
-  { from: 'west-terschelling', to: 'lauwersoog',         refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Zoutkamperlaag' },
-  { from: 'west-terschelling', to: 'denhelder',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom / Texelstroom' },
-  { from: 'west-terschelling', to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
+  
 
   // ── Nes (Ameland) vertrek ─────────────────────────────────────────────────
   { from: 'nes',               to: 'harlingen',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Boontjesroute / Pinkegat' },
