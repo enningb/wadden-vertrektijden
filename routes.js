@@ -30,8 +30,9 @@ const PORTS = [
   { id: 'den-oever',         name: 'Den Oever',             loc: 'den oever buiten',  refStation: 'den oever buiten',  hwOffsetMin:   0, alatOffset: 0.87 },
   { id: 'oudeschild',        name: 'Oudeschild (Texel)',    loc: null,                refStation: 'denhelder',         hwOffsetMin:  15, alatOffset: 0.90 },
   { id: 'oost-vlieland',     name: 'Oost-Vlieland',        loc: 'vlieland haven', refStation: 'vlieland haven', hwOffsetMin: 0, alatOffset: 0.90 },
-  { id: 'west-terschelling', name: 'West-Terschelling',    loc: null,          refStation: 'harlingen',  hwOffsetMin: -45, alatOffset: 1.05 },
-  { id: 'harlingen',         name: 'Harlingen',             loc: 'harlingen',   refStation: 'harlingen',  hwOffsetMin:   0, alatOffset: 1.10 },
+  { id: 'west-terschelling',  name: 'West-Terschelling',   loc: null,                            refStation: 'harlingen',                   hwOffsetMin: -45, alatOffset: 1.05 },
+  { id: 'harlingen',          name: 'Harlingen',           loc: 'harlingen',                     refStation: 'harlingen',                   hwOffsetMin:   0, alatOffset: 1.10 },
+  { id: 'kornwerderzand',     name: 'Kornwerderzand',      loc: 'Kornwerderzand buiten noord',   refStation: 'Kornwerderzand buiten noord', hwOffsetMin:   0, alatOffset: 1.05 },
   { id: 'nes',               name: 'Nes (Ameland)',         loc: null,          refStation: 'harlingen',  hwOffsetMin:  40, alatOffset: 1.05 },
   { id: 'schiermonnikoog',   name: 'Schiermonnikoog',       loc: null,          refStation: 'lauwersoog', hwOffsetMin: -30, alatOffset: 1.00 },
   { id: 'lauwersoog',        name: 'Lauwersoog',            loc: 'lauwersoog',  refStation: 'lauwersoog', hwOffsetMin:   0, alatOffset: 1.05 },
@@ -45,8 +46,9 @@ const STATION_ALAT = {
   denhelder:          0.87,
   'den oever buiten': 0.87,
   'vlieland haven':   0.90,
-  harlingen:  1.10,
-  lauwersoog: 1.05,
+  harlingen:                    1.10,
+  'Kornwerderzand buiten noord': 1.05,
+  lauwersoog:                   1.05,
   delfzijl:   1.30,
 };
 
@@ -72,6 +74,13 @@ const ROUTES = [
   { from: 'ijmuiden', to: 'den-oever',      refStation: 'IJmuiden',     refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  4, via: 'Noordzee kust / Amsteldiep', comment: 'Tijdvenster bij benadering.' },
 
  
+  // ── Kornwerderzand vertrek ───────────────────────────────────────────────
+  { from: 'kornwerderzand', to: 'harlingen',         refStation: 'Kornwerderzand buiten noord', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Zuider Stortemelk' },
+  { from: 'kornwerderzand', to: 'west-terschelling', refStation: 'Kornwerderzand buiten noord', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Zuider Stortemelk / Vliestroom' },
+  { from: 'kornwerderzand', to: 'oost-vlieland',     refStation: 'Kornwerderzand buiten noord', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Zuider Stortemelk / Vliestroom' },
+  { from: 'kornwerderzand', to: 'den-oever',         refStation: 'Kornwerderzand buiten noord', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Zuider Stortemelk / Malzwin' },
+  { from: 'kornwerderzand', to: 'denhelder',         refStation: 'Kornwerderzand buiten noord', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Zuider Stortemelk / Vliestroom / Texelstroom' },
+
   // ── Den Oever vertrek ────────────────────────────────────────────────────
   { from: 'den-oever', to: 'denhelder',   refStation: 'den oever buiten', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  4, via: 'Amsteldiep / Texelstroom' },
   { from: 'den-oever', to: 'oudeschild',  refStation: 'den oever buiten', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  3, via: 'Amsteldiep / Texelstroom' },

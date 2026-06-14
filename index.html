@@ -864,7 +864,7 @@ function showManualInput(dep, routes, neededStations, dateVal) {
   const area = document.getElementById('status-area');
   const stationNames = {
     Scheveningen: 'Scheveningen', IJmuiden: 'IJmuiden', denhelder: 'Den Helder', 'den oever buiten': 'Den Oever', 'vlieland haven': 'Vlieland', harlingen: 'Harlingen',
-    lauwersoog: 'Lauwersoog', delfzijl: 'Delfzijl',
+    'Kornwerderzand buiten noord': 'Kornwerderzand', lauwersoog: 'Lauwersoog', delfzijl: 'Delfzijl',
   };
 
   const inputs = neededStations.map(loc => `
@@ -942,7 +942,7 @@ function renderResults(dep, myRoutes, fetchedData, errors, dateVal) {
   let tidalHTML = '';
   const stationNames = {
     Scheveningen: 'Scheveningen', IJmuiden: 'IJmuiden', denhelder: 'Den Helder', 'den oever buiten': 'Den Oever', 'vlieland haven': 'Vlieland', harlingen: 'Harlingen',
-    lauwersoog: 'Lauwersoog', delfzijl: 'Delfzijl',
+    'Kornwerderzand buiten noord': 'Kornwerderzand', lauwersoog: 'Lauwersoog', delfzijl: 'Delfzijl',
   };
 
   const cells = Object.entries(fetchedData).map(([loc, data]) => {
