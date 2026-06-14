@@ -57,7 +57,7 @@ const STATION_ALAT = {
 //   → window opens 2h after LW and closes 1h after the following HW
 const ROUTES = [
   // ── Den Helder vertrek ────────────────────────────────────────────────────
-  { from: 'denhelder',         to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'LW', startOffset: -1, refEndTide: 'LW', endOffset:  3, via: 'Marsdiep / Texelstroom' },
+  { from: 'denhelder',         to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'LW', startOffset: -1, refEndTide: 'LW', endOffset:  3, via: 'Marsdiep / Texelstroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: 'Ik weet niet of het klopt.'},
   { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -1, via: 'Texelstroom / Vliestroom' },
   { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -6, refEndTide: 'HW', endOffset:  -6, via: 'Molengat (buitenom)' },
   { from: 'denhelder',         to: 'west-terschelling',  refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  1, via: 'Vliestroom' },
