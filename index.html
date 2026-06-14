@@ -658,69 +658,49 @@ function findTidalExtrema(series) {
 }
 
 // ─── API ─────────────────────────────────────────────────────────────────────
-// Store fetched tidal data: { stationLoc: [{time, value, type}] }
 let tidalCache = {};
+
+const tryFetch = async (fetchUrl, parseJson) => {
+  const resp = await fetch(fetchUrl, { signal: AbortSignal.timeout(10000) });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  if (parseJson) { const j = await resp.json(); return j.contents || j.body || ''; }
+  return await resp.text();
+};
+
+async function fetchMatroos(loc, unit, date, source = 'rws_prediction') {
+  const d  = new Date(date + 'T00:00:00Z');
+  const d2 = new Date(d.getTime() + 2 * 86400000);
+  const pad2 = n => String(n).padStart(2, '0');
+  const fmt = dt => `${dt.getUTCFullYear()}${pad2(dt.getUTCMonth()+1)}${pad2(dt.getUTCDate())}${pad2(dt.getUTCHours())}${pad2(dt.getUTCMinutes())}`;
+  const params = new URLSearchParams({ loc, source, unit, timezone: 'UTC', tstart: fmt(d), tstop: fmt(d2) });
+  const url = `https://noos.matroos.rws.nl/direct/get_series.php?${params}`;
+
+  let text;
+  try { text = await tryFetch(url, false); } catch (e) {}
+  if (!text) try { text = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, false); } catch (e) {}
+  if (!text) try { text = await tryFetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, true); } catch (e) {}
+  if (!text || text.includes('does not exist')) return null;
+  return parseMatroosText(text);
+}
 
 async function fetchStationData(loc, date) {
   if (tidalCache[loc]) return tidalCache[loc];
 
-  const d = new Date(date + 'T00:00:00Z');
-  const d2 = new Date(d.getTime() + 2 * 86400000); // +2 days to catch all HW on the day
+  // Fetch predicted water level and astronomical tide in parallel
+  const [predSeries, astroSeries] = await Promise.all([
+    fetchMatroos(loc, 'waterlevel',       date),
+    fetchMatroos(loc, 'waterlevel_astro', date, 'observed'),
+  ]);
 
-  const pad2 = n => String(n).padStart(2, '0');
-  const fmt = dt =>
-    `${dt.getUTCFullYear()}${pad2(dt.getUTCMonth()+1)}${pad2(dt.getUTCDate())}${pad2(dt.getUTCHours())}${pad2(dt.getUTCMinutes())}`;
-
-  const params = new URLSearchParams({
-    loc,
-    source: 'rws_prediction',
-    unit: 'waterlevel',
-    timezone: 'UTC',
-    tstart: fmt(d),
-    tstop: fmt(d2),
-  });
-
-  const url = `https://noos.matroos.rws.nl/direct/get_series.php?${params}`;
-
-  let text;
-  const lastErr = { msg: '' };
-
-  const tryFetch = async (fetchUrl, parseJson) => {
-    const resp = await fetch(fetchUrl, { signal: AbortSignal.timeout(10000) });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    if (parseJson) {
-      const j = await resp.json();
-      return j.contents || j.body || '';
-    }
-    return await resp.text();
-  };
-
-  // 1. Direct (works if the API ever adds CORS headers)
-  try { text = await tryFetch(url, false); } catch (e) { lastErr.msg = e.message; }
-
-  // 2. corsproxy.io — returns raw content
-  if (!text) {
-    try { text = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, false); }
-    catch (e) { lastErr.msg = e.message; }
-  }
-
-  // 3. allorigins.win — wraps content in JSON
-  if (!text) {
-    try { text = await tryFetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, true); }
-    catch (e) { lastErr.msg = e.message; }
-  }
-
-  if (!text) throw new Error(`Kan geen getijdata ophalen voor ${loc}: ${lastErr.msg}`);
-
-  if (!text || text.includes('does not exist') || text.includes('error')) {
+  if (!predSeries || predSeries.length === 0)
     throw new Error(`Geen getijdata beschikbaar voor "${loc}"`);
-  }
 
-  const series = parseMatroosText(text);
-  if (series.length === 0) throw new Error(`Lege getijdata voor "${loc}"`);
+  const extrema      = findTidalExtrema(predSeries);
+  const astroExtrema = (astroSeries && astroSeries.length > 10)
+    ? findTidalExtrema(astroSeries)
+    : null;
 
-  const extrema = findTidalExtrema(series);
-  tidalCache[loc] = { series, extrema };
+  tidalCache[loc] = { series: predSeries, extrema, astroExtrema };
   return tidalCache[loc];
 }
 
@@ -971,18 +951,38 @@ function renderResults(dep, myRoutes, fetchedData, errors, dateVal) {
     const dayExtrema = data.extrema.filter(e => e.time >= dayStart && e.time <= dayEnd);
 
     const alatOffset = STATION_ALAT[loc] || 0;
+
+    // Build a lookup of astro extrema by type for pairing with predicted extrema
+    const dayAstro = (data.astroExtrema || []).filter(e => e.time >= dayStart && e.time <= dayEnd);
+    // Match each predicted extremum to the nearest astro extremum of the same type
+    const nearestAstro = (predEvent) => {
+      const candidates = dayAstro.filter(a => a.type === predEvent.type);
+      if (!candidates.length) return null;
+      return candidates.reduce((best, a) =>
+        Math.abs(a.time - predEvent.time) < Math.abs(best.time - predEvent.time) ? a : best
+      );
+    };
+
     const entries = dayExtrema.map(e => {
       let heightStr = '';
       if (e.value != null) {
-        const nap = `${e.value >= 0 ? '+' : ''}${e.value.toFixed(2)}m NAP`;
-        const alatVal = e.value + alatOffset;
-        const alat = `+${alatVal.toFixed(2)}m ALAT`;
+        const nap  = `${e.value >= 0 ? '+' : ''}${e.value.toFixed(2)}m NAP`;
+        const alat = `+${(e.value + alatOffset).toFixed(2)}m ALAT`;
         heightStr = `${nap} / ${alat}`;
+      }
+      const astro = nearestAstro(e);
+      let astroStr = '';
+      if (astro) {
+        const surge = e.value - astro.value;
+        astroStr = `<div style="font-size:.72rem;color:#888;margin-bottom:.3rem">` +
+          `astro ${fmtTime(astro.time)} ${astro.value >= 0 ? '+' : ''}${astro.value.toFixed(2)}m` +
+          ` · opzet ${surge >= 0 ? '+' : ''}${surge.toFixed(2)}m` +
+          `</div>`;
       }
       return `<div class="hw-entry">
         <span class="hw-time">${fmtTime(e.time)}</span>
         <span class="hw-badge ${e.type === 'LW' ? 'lw-badge' : ''}">${e.type}</span>
-      </div>${heightStr ? `<div style="font-size:.75rem;color:var(--text-light);padding-left:0;margin-bottom:.3rem">${heightStr}</div>` : ''}`;
+      </div>${heightStr ? `<div style="font-size:.75rem;color:var(--text-light);margin-bottom:.1rem">${heightStr}</div>` : ''}${astroStr}`;
     }).join('');
 
     return `<div class="tidal-cell">
