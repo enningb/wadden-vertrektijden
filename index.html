@@ -725,38 +725,58 @@ async function fetchStationData(loc, date) {
 }
 
 // ─── DEPARTURE WINDOW CALCULATION ────────────────────────────────────────────
-// For a route, find all HW events on the selected date and compute departure windows
+// For a route, find all departure windows on the selected date.
+// Each window is anchored by two independent tidal events (HW or LW):
+//   windowOpen  = startEvent.time + route.startOffset hours
+//   windowClose = endEvent.time   + route.endOffset hours
+// The endEvent is the first extremum of type refEndTide that occurs at or after
+// the startEvent (same event when refStartTide === refEndTide).
 function calcDepartureWindows(route, refExtrema, selectedDate) {
-  const dateStr = selectedDate; // YYYY-MM-DD
-  const dayStart = new Date(dateStr + 'T00:00:00+01:00'); // CET
-  const dayEnd = new Date(dateStr + 'T23:59:59+01:00');
-
-  // Get all HW events for this date from reference station (search ±1 day to find nearby HW)
-  const hwEvents = refExtrema.filter(e => e.type === 'HW');
+  const dayStart = new Date(selectedDate + 'T00:00:00+01:00');
+  const dayEnd   = new Date(selectedDate + 'T23:59:59+01:00');
 
   const windows = [];
 
-  for (const hw of hwEvents) {
-    // Compute window start and end
-    const windowStart = addHours(hw.time, route.minHW);
-    const windowEnd = addHours(hw.time, route.maxHW);
+  // Iterate over every extremum that matches refStartTide
+  for (const startEvent of refExtrema) {
+    if (startEvent.type !== route.refStartTide) continue;
+
+    const windowStart = addHours(startEvent.time, route.startOffset);
+
+    // Find the nearest refEndTide event at or after startEvent
+    const endEvent = refExtrema.find(e =>
+      e.type === route.refEndTide &&
+      e.time >= startEvent.time &&
+      (route.refStartTide !== route.refEndTide || e !== startEvent)
+    );
+    // When both anchors are the same tide type the end event IS the start event
+    const resolvedEnd = (route.refStartTide === route.refEndTide)
+      ? startEvent
+      : endEvent;
+    if (!resolvedEnd) continue;
+
+    const windowEnd = addHours(resolvedEnd.time, route.endOffset);
+    if (windowEnd <= windowStart) continue;
 
     // Only include windows that overlap with the calendar day
     if (windowEnd < dayStart || windowStart > dayEnd) continue;
 
-    // Clamp to day
     const clampedStart = windowStart < dayStart ? dayStart : windowStart;
-    const clampedEnd = windowEnd > dayEnd ? dayEnd : windowEnd;
+    const clampedEnd   = windowEnd   > dayEnd   ? dayEnd   : windowEnd;
+
+    // Best departure: 30 % into the unclamped window
+    const bestDep = new Date(
+      windowStart.getTime() + 0.3 * (windowEnd.getTime() - windowStart.getTime())
+    );
 
     windows.push({
-      hwTime: hw.time,
-      hwHeight: hw.value,
+      startEvent,
+      endEvent: resolvedEnd,
       windowStart: clampedStart,
-      windowEnd: clampedEnd,
+      windowEnd:   clampedEnd,
       durationMin: Math.round((clampedEnd - clampedStart) / 60000),
-      isPartial: windowStart < dayStart || windowEnd > dayEnd,
-      // Best departure: ~HW-1h (often optimal for flowing tide assist)
-      bestDeparture: addHours(hw.time, route.minHW + (route.maxHW - route.minHW) * 0.3),
+      isPartial:   windowStart < dayStart || windowEnd > dayEnd,
+      bestDeparture: bestDep,
     });
   }
 
@@ -990,18 +1010,23 @@ function renderResults(dep, myRoutes, fetchedData, errors, dateVal) {
     const cardClass = isPartial ? 'partial' : '';
     const statusText = isPartial ? 'Beperkt venster' : 'Mogelijk';
 
-    const windowRef = `HW ${stationNames[route.refStation] || route.refStation}`;
-    const windowRule = `${route.minHW >= 0 ? '+' : ''}${route.minHW}u tot ${route.maxHW >= 0 ? '+' : ''}${route.maxHW}u na HW`;
+    const fmtOffset = h => `${h >= 0 ? '+' : ''}${h}u`;
+    const windowRule = `${route.refStartTide} ${fmtOffset(route.startOffset)} tot ${route.refEndTide} ${fmtOffset(route.endOffset)}`;
 
     const stationAlat = STATION_ALAT[route.refStation] || 0;
     const windowItems = windows.map(w => {
-      let hwHeightStr = '';
-      if (w.hwHeight != null) {
-        const nap = `${w.hwHeight >= 0 ? '+' : ''}${w.hwHeight.toFixed(2)}m NAP`;
-        const alat = `+${(w.hwHeight + stationAlat).toFixed(2)}m ALAT`;
-        hwHeightStr = ` (${nap} / ${alat})`;
-      }
-      const hwStr = `HW ${fmtTime(w.hwTime)}${hwHeightStr}`;
+      const fmtEvent = (ev) => {
+        let s = `${ev.type} ${fmtTime(ev.time)}`;
+        if (ev.value != null) {
+          const nap  = `${ev.value >= 0 ? '+' : ''}${ev.value.toFixed(2)}m NAP`;
+          const alat = `+${(ev.value + stationAlat).toFixed(2)}m ALAT`;
+          s += ` (${nap} / ${alat})`;
+        }
+        return s;
+      };
+      const anchorStr = w.startEvent === w.endEvent
+        ? fmtEvent(w.startEvent)
+        : `${fmtEvent(w.startEvent)} → ${fmtEvent(w.endEvent)}`;
       const durH = Math.floor(w.durationMin / 60);
       const durM = w.durationMin % 60;
       const durStr = durH > 0 ? `${durH}u${durM > 0 ? ` ${durM}m` : ''}` : `${durM}m`;
@@ -1014,8 +1039,8 @@ function renderResults(dep, myRoutes, fetchedData, errors, dateVal) {
           ${fmtTime(w.windowStart)} <span class="sep">→</span> ${fmtTime(w.windowEnd)}
         </div>
         <div class="window-detail">
-          <strong>${hwStr}</strong>${partial}<br>
-          Duur: ${durStr} · ref: ${windowRef}
+          <strong>${anchorStr}</strong>${partial}<br>
+          Duur: ${durStr} · ref: ${stationNames[route.refStation] || route.refStation}
         </div>
       </li>${best}`;
     }).join('');

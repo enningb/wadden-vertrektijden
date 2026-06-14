@@ -43,65 +43,70 @@ const STATION_ALAT = {
 };
 
 // ── ROUTES ───────────────────────────────────────────────────────────────────
-// from / to:    port IDs (must match PORTS[].id)
-// refStation:   which station's HW is used as departure reference
-// minHW:        earliest departure (hours before HW, negative)
-// maxHW:        latest departure (hours after HW, positive)
-// via:          route/gat description (informational)
+// from / to:       port IDs (must match PORTS[].id)
+// refStation:      which Matroos station's extrema are used as departure reference
+// refStartTide:    'HW' or 'LW' — tidal event the window OPENS relative to
+// startOffset:     hours before (-) or after (+) refStartTide when window opens
+// refEndTide:      'HW' or 'LW' — tidal event the window CLOSES relative to
+// endOffset:       hours before (-) or after (+) refEndTide when window closes
+// via:             route/gat description (informational)
+//
+// Example: refStartTide:'LW', startOffset:+2, refEndTide:'HW', endOffset:+1
+//   → window opens 2h after LW and closes 1h after the following HW
 const ROUTES = [
   // ── Den Helder vertrek ────────────────────────────────────────────────────
-  { from: 'denhelder',         to: 'oudeschild',         refStation: 'denhelder',  minHW: -1, maxHW:  5, via: 'Marsdiep / Texelstroom' },
-  { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  minHW: -2, maxHW:  2, via: 'Texelstroom / Vliestroom' },
-  { from: 'denhelder',         to: 'west-terschelling',  refStation: 'denhelder',  minHW: -3, maxHW:  1, via: 'Vliestroom' },
-  { from: 'denhelder',         to: 'harlingen',          refStation: 'denhelder',  minHW: -3, maxHW:  0, via: 'Vliestroom / Zuider Stortemelk' },
+  { from: 'denhelder',         to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  5, via: 'Marsdiep / Texelstroom' },
+  { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Texelstroom / Vliestroom' },
+  { from: 'denhelder',         to: 'west-terschelling',  refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  1, via: 'Vliestroom' },
+  { from: 'denhelder',         to: 'harlingen',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  0, via: 'Vliestroom / Zuider Stortemelk' },
 
   // ── Oudeschild (Texel) vertrek ────────────────────────────────────────────
-  { from: 'oudeschild',        to: 'denhelder',          refStation: 'denhelder',  minHW: -5, maxHW:  1, via: 'Texelstroom / Marsdiep' },
-  { from: 'oudeschild',        to: 'oost-vlieland',      refStation: 'denhelder',  minHW: -2, maxHW:  2, via: 'Vliestroom' },
-  { from: 'oudeschild',        to: 'west-terschelling',  refStation: 'denhelder',  minHW: -2, maxHW:  1, via: 'Vliestroom' },
-  { from: 'oudeschild',        to: 'harlingen',          refStation: 'denhelder',  minHW: -3, maxHW:  0, via: 'Vliestroom' },
+  { from: 'oudeschild',        to: 'denhelder',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -5, refEndTide: 'HW', endOffset:  1, via: 'Texelstroom / Marsdiep' },
+  { from: 'oudeschild',        to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
+  { from: 'oudeschild',        to: 'west-terschelling',  refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Vliestroom' },
+  { from: 'oudeschild',        to: 'harlingen',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  0, via: 'Vliestroom' },
 
   // ── Harlingen vertrek ─────────────────────────────────────────────────────
-  { from: 'harlingen',         to: 'west-terschelling',  refStation: 'harlingen',  minHW: -2, maxHW:  2, via: 'Vliestroom' },
-  { from: 'harlingen',         to: 'oost-vlieland',      refStation: 'harlingen',  minHW: -2, maxHW:  2, via: 'Blauwe Slenk' },
-  { from: 'harlingen',         to: 'nes',                refStation: 'harlingen',  minHW: -1, maxHW:  3, via: 'Boontjesroute / Pinkegat' },
-  { from: 'harlingen',         to: 'lauwersoog',         refStation: 'harlingen',  minHW: -2, maxHW:  1, via: 'Zoutkamperlaag' },
-  { from: 'harlingen',         to: 'denhelder',          refStation: 'harlingen',  minHW: -1, maxHW:  3, via: 'Vliestroom' },
-  { from: 'harlingen',         to: 'oudeschild',         refStation: 'harlingen',  minHW: -1, maxHW:  3, via: 'Vliestroom' },
+  { from: 'harlingen',         to: 'west-terschelling',  refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
+  { from: 'harlingen',         to: 'oost-vlieland',      refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Blauwe Slenk' },
+  { from: 'harlingen',         to: 'nes',                refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Boontjesroute / Pinkegat' },
+  { from: 'harlingen',         to: 'lauwersoog',         refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Zoutkamperlaag' },
+  { from: 'harlingen',         to: 'denhelder',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom' },
+  { from: 'harlingen',         to: 'oudeschild',         refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom' },
 
   // ── Oost-Vlieland vertrek ─────────────────────────────────────────────────
-  { from: 'oost-vlieland',     to: 'denhelder',          refStation: 'denhelder',  minHW: -2, maxHW:  2, via: 'Vliestroom / Texelstroom' },
-  { from: 'oost-vlieland',     to: 'oudeschild',         refStation: 'denhelder',  minHW: -2, maxHW:  2, via: 'Vliestroom' },
-  { from: 'oost-vlieland',     to: 'west-terschelling',  refStation: 'harlingen',  minHW: -2, maxHW:  3, via: 'Vliestroom' },
-  { from: 'oost-vlieland',     to: 'harlingen',          refStation: 'harlingen',  minHW: -2, maxHW:  2, via: 'Blauwe Slenk' },
+  { from: 'oost-vlieland',     to: 'denhelder',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom / Texelstroom' },
+  { from: 'oost-vlieland',     to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
+  { from: 'oost-vlieland',     to: 'west-terschelling',  refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom' },
+  { from: 'oost-vlieland',     to: 'harlingen',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Blauwe Slenk' },
 
   // ── West-Terschelling vertrek ─────────────────────────────────────────────
-  { from: 'west-terschelling', to: 'harlingen',          refStation: 'harlingen',  minHW: -2, maxHW:  2, via: 'Vliestroom' },
-  { from: 'west-terschelling', to: 'oost-vlieland',      refStation: 'harlingen',  minHW: -2, maxHW:  3, via: 'Vliestroom' },
-  { from: 'west-terschelling', to: 'nes',                refStation: 'harlingen',  minHW: -1, maxHW:  3, via: 'Boontjesroute' },
-  { from: 'west-terschelling', to: 'lauwersoog',         refStation: 'harlingen',  minHW: -2, maxHW:  1, via: 'Zoutkamperlaag' },
-  { from: 'west-terschelling', to: 'denhelder',          refStation: 'denhelder',  minHW: -1, maxHW:  3, via: 'Vliestroom / Texelstroom' },
-  { from: 'west-terschelling', to: 'oudeschild',         refStation: 'denhelder',  minHW: -1, maxHW:  2, via: 'Vliestroom' },
+  { from: 'west-terschelling', to: 'harlingen',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
+  { from: 'west-terschelling', to: 'oost-vlieland',      refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom' },
+  { from: 'west-terschelling', to: 'nes',                refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Boontjesroute' },
+  { from: 'west-terschelling', to: 'lauwersoog',         refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Zoutkamperlaag' },
+  { from: 'west-terschelling', to: 'denhelder',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Vliestroom / Texelstroom' },
+  { from: 'west-terschelling', to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  2, via: 'Vliestroom' },
 
   // ── Nes (Ameland) vertrek ─────────────────────────────────────────────────
-  { from: 'nes',               to: 'harlingen',          refStation: 'harlingen',  minHW: -1, maxHW:  3, via: 'Boontjesroute / Pinkegat' },
-  { from: 'nes',               to: 'west-terschelling',  refStation: 'harlingen',  minHW: -1, maxHW:  3, via: 'Boontjesroute' },
-  { from: 'nes',               to: 'lauwersoog',         refStation: 'lauwersoog', minHW: -1, maxHW:  3, via: 'Pinkegat / Westgat' },
-  { from: 'nes',               to: 'schiermonnikoog',    refStation: 'lauwersoog', minHW: -1, maxHW:  3, via: 'Westgat' },
+  { from: 'nes',               to: 'harlingen',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Boontjesroute / Pinkegat' },
+  { from: 'nes',               to: 'west-terschelling',  refStation: 'harlingen',  refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Boontjesroute' },
+  { from: 'nes',               to: 'lauwersoog',         refStation: 'lauwersoog', refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Pinkegat / Westgat' },
+  { from: 'nes',               to: 'schiermonnikoog',    refStation: 'lauwersoog', refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Westgat' },
 
   // ── Lauwersoog vertrek ────────────────────────────────────────────────────
-  { from: 'lauwersoog',        to: 'nes',                refStation: 'lauwersoog', minHW: -1, maxHW:  3, via: 'Westgat / Pinkegat' },
-  { from: 'lauwersoog',        to: 'schiermonnikoog',    refStation: 'lauwersoog', minHW: -1, maxHW:  3, via: 'Westgat' },
-  { from: 'lauwersoog',        to: 'harlingen',          refStation: 'harlingen',  minHW: -2, maxHW:  1, via: 'Zoutkamperlaag' },
-  { from: 'lauwersoog',        to: 'west-terschelling',  refStation: 'harlingen',  minHW: -2, maxHW:  1, via: 'Zoutkamperlaag' },
-  { from: 'lauwersoog',        to: 'delfzijl',           refStation: 'lauwersoog', minHW: -3, maxHW:  1, via: 'Zoutkamperlaag / Eems' },
+  { from: 'lauwersoog',        to: 'nes',                refStation: 'lauwersoog', refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Westgat / Pinkegat' },
+  { from: 'lauwersoog',        to: 'schiermonnikoog',    refStation: 'lauwersoog', refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Westgat' },
+  { from: 'lauwersoog',        to: 'harlingen',          refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Zoutkamperlaag' },
+  { from: 'lauwersoog',        to: 'west-terschelling',  refStation: 'harlingen',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  1, via: 'Zoutkamperlaag' },
+  { from: 'lauwersoog',        to: 'delfzijl',           refStation: 'lauwersoog', refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  1, via: 'Zoutkamperlaag / Eems' },
 
   // ── Delfzijl vertrek ──────────────────────────────────────────────────────
-  { from: 'delfzijl',          to: 'schiermonnikoog',    refStation: 'delfzijl',   minHW: -1, maxHW:  3, via: 'Eems / Westgat' },
-  { from: 'delfzijl',          to: 'lauwersoog',         refStation: 'lauwersoog', minHW: -3, maxHW:  1, via: 'Eems / Zoutkamperlaag' },
+  { from: 'delfzijl',          to: 'schiermonnikoog',    refStation: 'delfzijl',   refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Eems / Westgat' },
+  { from: 'delfzijl',          to: 'lauwersoog',         refStation: 'lauwersoog', refStartTide: 'HW', startOffset: -3, refEndTide: 'HW', endOffset:  1, via: 'Eems / Zoutkamperlaag' },
 
   // ── Schiermonnikoog vertrek ───────────────────────────────────────────────
-  { from: 'schiermonnikoog',   to: 'lauwersoog',         refStation: 'lauwersoog', minHW: -1, maxHW:  3, via: 'Westgat' },
-  { from: 'schiermonnikoog',   to: 'nes',                refStation: 'lauwersoog', minHW: -1, maxHW:  3, via: 'Westgat / Pinkegat' },
-  { from: 'schiermonnikoog',   to: 'delfzijl',           refStation: 'delfzijl',   minHW: -1, maxHW:  3, via: 'Westgat / Eems' },
+  { from: 'schiermonnikoog',   to: 'lauwersoog',         refStation: 'lauwersoog', refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Westgat' },
+  { from: 'schiermonnikoog',   to: 'nes',                refStation: 'lauwersoog', refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Westgat / Pinkegat' },
+  { from: 'schiermonnikoog',   to: 'delfzijl',           refStation: 'delfzijl',   refStartTide: 'HW', startOffset: -1, refEndTide: 'HW', endOffset:  3, via: 'Westgat / Eems' },
 ];
