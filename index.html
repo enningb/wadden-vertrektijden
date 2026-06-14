@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waddenzee Vertrektijden Planner</title>
+  <style>
+    :root {
+      --navy: #0b2a45;
+      --navy-mid: #143d5c;
+      --sea: #1a5f8a;
+      --sea-light: #2980b9;
+      --sand: #f4edd6;
+      --sand-dark: #e8d8b0;
+      --text: #1a1a2e;
+      --text-light: #4a5568;
+      --white: #ffffff;
+      --accent: #e07b39;
+      --accent-light: #f0a060;
+      --green: #27ae60;
+      --red: #c0392b;
+      --yellow: #f39c12;
+      --radius: 10px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(160deg, #071e30 0%, var(--navy-mid) 60%, #1a4a6e 100%);
+      padding: 2.5rem 1.5rem 2rem;
+      text-align: center;
+      color: var(--white);
+      border-bottom: 3px solid var(--accent);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 40px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40'%3E%3Cpath fill='%230b2a45' d='M0,20 C360,40 720,0 1080,20 C1260,30 1380,25 1440,20 L1440,40 L0,40Z'/%3E%3C/svg%3E") no-repeat bottom center;
+      background-size: cover;
+    }
+    .header-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; }
+    header h1 {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.8;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      background: var(--sand);
+      border-bottom: 2px solid var(--sand-dark);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .card-header h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .card-header .step-badge {
+      width: 26px; height: 26px;
+      background: var(--navy);
+      color: white;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-body { padding: 1.5rem; }
+
+    /* ── FORM ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-group select,
+    .form-group input[type="date"] {
+      padding: 0.65rem 0.9rem;
+      border: 2px solid var(--sand-dark);
+      border-radius: 8px;
+      font-size: 1rem;
+      color: var(--text);
+      background: var(--white);
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .form-group select:focus,
+    .form-group input[type="date"]:focus {
+      outline: none;
+      border-color: var(--sea);
+    }
+    .select-wrapper { position: relative; }
+    .select-wrapper::after {
+      content: '▾';
+      position: absolute;
+      right: 0.9rem; top: 50%;
+      transform: translateY(-50%);
+      color: var(--sea);
+      pointer-events: none;
+    }
+
+    .btn-plan {
+      margin-top: 1.2rem;
+      width: 100%;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, var(--sea) 0%, var(--sea-light) 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.02em;
+    }
+    .btn-plan:hover { opacity: 0.9; }
+    .btn-plan:active { transform: scale(0.99); }
+    .btn-plan:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── SEPARATOR ── */
+    .section-gap { height: 1.5rem; }
+
+    /* ── STATUS ── */
+    #status-area { margin-top: 1.5rem; }
+    .status-loading {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      color: var(--navy);
+      font-weight: 500;
+    }
+    .spinner {
+      width: 22px; height: 22px;
+      border: 3px solid var(--sand-dark);
+      border-top-color: var(--sea);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-error {
+      background: #fdf0ee;
+      border: 2px solid #f5c6c0;
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      color: var(--red);
+    }
+    .status-error strong { display: block; margin-bottom: 0.3rem; }
+    .status-error p { font-size: 0.9rem; color: #666; margin-top: 0.5rem; }
+
+    /* ── MANUAL HW INPUT ── */
+    .manual-hw-section {
+      background: #fff9f0;
+      border: 2px dashed var(--accent-light);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      margin-top: 1rem;
+    }
+    .manual-hw-section h3 {
+      font-size: 0.95rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+    .hw-inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.8rem;
+    }
+    .hw-input-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 0.3rem;
+    }
+    .hw-input-group input[type="time"] {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border: 2px solid var(--sand-dark);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    .btn-manual-calc {
+      margin-top: 1rem;
+      padding: 0.65rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-manual-calc:hover { opacity: 0.9; }
+
+    /* ── TIDAL OVERVIEW ── */
+    .tidal-overview {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-top: 1.5rem;
+      overflow: hidden;
+    }
+    .tidal-header {
+      background: var(--navy);
+      color: white;
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .tidal-times-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1px;
+      background: var(--sand-dark);
+    }
+    .tidal-cell {
+      background: var(--white);
+      padding: 0.8rem 1rem;
+    }
+    .tidal-cell .station-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.4rem;
+    }
+    .hw-entry {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      margin-bottom: 0.25rem;
+    }
+    .hw-time {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--sea);
+    }
+    .hw-height {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+    .hw-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: #d4edff;
+      color: var(--sea);
+      text-transform: uppercase;
+    }
+    .lw-badge {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    /* ── DEPARTURE RESULTS ── */
+    .results-section { margin-top: 1.5rem; }
+    .results-section h2 {
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .route-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
+      overflow: hidden;
+      border-left: 5px solid var(--green);
+    }
+    .route-card.partial { border-left-color: var(--yellow); }
+    .route-card.closed { border-left-color: var(--red); opacity: 0.75; }
+
+    .route-card-header {
+      padding: 0.9rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      background: var(--sand);
+    }
+    .route-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--navy);
+    }
+    .route-via {
+      font-size: 0.75rem;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+    .route-status-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: #d4f0d8;
+      color: var(--green);
+    }
+    .route-card.partial .route-status-badge { background: #fff3cd; color: #856404; }
+    .route-card.closed .route-status-badge { background: #fde8e8; color: var(--red); }
+
+    .route-card-body { padding: 1rem 1.2rem; }
+
+    .window-list { list-style: none; }
+    .window-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--sand);
+    }
+    .window-item:last-child { border-bottom: none; }
+
+    .window-times {
+      min-width: 140px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--sea);
+    }
+    .window-times .sep { color: var(--text-light); font-weight: 400; }
+    .window-detail { font-size: 0.85rem; color: var(--text-light); line-height: 1.4; }
+    .window-detail strong { color: var(--text); }
+
+    .best-window {
+      background: #f0f9ff;
+      border-radius: 6px;
+      padding: 0.5rem 0.8rem;
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: var(--sea);
+    }
+    .best-window strong { font-weight: 700; }
+
+    .no-route {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+
+    /* ── DISCLAIMER ── */
+    .disclaimer {
+      margin-top: 2rem;
+      background: rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.6;
+    }
+    .disclaimer strong { color: rgba(255,255,255,0.9); }
+
+    /* ── TIDE BAR ── */
+    .tide-bar-wrap { margin-top: 0.8rem; }
+    .tide-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-light);
+      margin-bottom: 3px;
+    }
+    .tide-bar {
+      height: 8px;
+      background: var(--sand-dark);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .tide-bar-fill {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(90deg, var(--sea-light), var(--sea));
+      border-radius: 4px;
+    }
+    .tide-bar-marker {
+      position: absolute;
+      height: 100%;
+      width: 2px;
+      background: var(--accent);
+      top: 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.8rem;
+    }
+    footer a { color: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="header-icon">⚓</span>
+  <h1>Waddenzee Vertrektijden Planner</h1>
+  <p>Plan je vertrek op basis van het getij — aanbevolen vertrektijden voor waddenhavens</p>
+</header>
+
+<main>
+  <!-- FORM CARD -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge">1</div>
+      <h2>Kies je vertrekdatum en -haven</h2>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Vertrekdatum</label>
+          <input type="date" id="date-input" />
+        </div>
+        <div class="form-group">
+          <label>Vertrekhaven</label>
+          <div class="select-wrapper">
+            <select id="port-select">
+              <option value="">— Selecteer haven —</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button class="btn-plan" id="plan-btn" onclick="planTrip()">🧭 Bereken vertrektijden</button>
+    </div>
+  </div>
+
+  <div id="status-area"></div>
+
+</main>
+
+<footer>
+  Gebaseerd op getijvoorspellingen van <a href="https://noos.matroos.rws.nl" target="_blank">Rijkswaterstaat / Matroos</a> &bull;
+  Vertrektijden gebaseerd op ANWB Almanak voor Watertoerisme &bull;
+  <strong>Uitsluitend ter indicatie — raadpleeg altijd officiële zeegidsen</strong>
+</footer>
+
+<script src="routes.js"></script>
+<script>
+'use strict';
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const portById = id => PORTS.find(p => p.id === id);
+const portByLoc = loc => PORTS.find(p => p.loc === loc);
+
+function fmtTime(date) {
+  return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam' });
+}
+function fmtDateShort(date) {
+  return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', timeZone: 'Europe/Amsterdam' });
+}
+function addMinutes(date, mins) {
+  return new Date(date.getTime() + mins * 60000);
+}
+function addHours(date, hrs) {
+  return new Date(date.getTime() + hrs * 3600000);
+}
+
+// Parse YYYYMMDDHHMM or YYYY-MM-DDTHH:MM:SS timestamps from Matroos
+function parseMatroosTimestamp(str) {
+  str = str.trim();
+  if (str.includes('T')) {
+    // ISO: 2026-06-14T13:20:00 — treat as UTC since we request UTC, or CET
+    // We request timezone=UTC so these are UTC
+    return new Date(str + 'Z');
+  } else {
+    // YYYYMMDDHHMM
+    const y = str.slice(0,4), mo = str.slice(4,6), d = str.slice(6,8),
+          h = str.slice(8,10), mi = str.slice(10,12);
+    return new Date(`${y}-${mo}-${d}T${h}:${mi}:00Z`);
+  }
+}
+
+// Parse Matroos text-format response into [{time: Date, value: number}]
+function parseMatroosText(text) {
+  const series = [];
+  for (const line of text.split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith('#') || t.startsWith('%')) continue;
+    const parts = t.split(/\s+/);
+    if (parts.length < 2) continue;
+    const value = parseFloat(parts[parts.length - 1]);
+    const timeStr = parts[0];
+    if (isNaN(value) || value > 99000) continue; // missing value sentinel
+    const time = parseMatroosTimestamp(timeStr);
+    if (!isNaN(time.getTime())) series.push({ time, value });
+  }
+  return series;
+}
+
+// Find tidal extrema in a water level time series.
+// Uses LW-bracket approach so that flat-top HW events (e.g. Den Helder "agger") are detected.
+function findTidalExtrema(series) {
+  if (series.length < 10) return [];
+
+  // 7-point moving average to smooth noise
+  const smooth = series.map((p, i) => {
+    const lo = Math.max(0, i - 3), hi = Math.min(series.length - 1, i + 3);
+    let sum = 0, cnt = 0;
+    for (let j = lo; j <= hi; j++) { sum += series[j].value; cnt++; }
+    return sum / cnt;
+  });
+
+  // ── Step 1: Find raw LW candidates (local minima) ──
+  const rawLW = [];
+  for (let i = 1; i < series.length - 1; i++) {
+    if (smooth[i] <= smooth[i - 1] && smooth[i] < smooth[i + 1]) {
+      rawLW.push({ time: series[i].time, value: series[i].value, type: 'LW' });
+    }
+  }
+
+  // ── Step 2: Merge nearby LW events (within 90 min) → keep lowest ──
+  const mergedLW = [];
+  for (const lw of rawLW) {
+    const last = mergedLW[mergedLW.length - 1];
+    if (last && (lw.time - last.time) < 90 * 60000) {
+      if (lw.value < last.value) mergedLW[mergedLW.length - 1] = { ...lw };
+    } else {
+      mergedLW.push({ ...lw });
+    }
+  }
+
+  // Filter out agger dips: keep only LW events that are truly low
+  // (below the 40th percentile of the tidal range = minVal + 0.4 * range)
+  const seriesMin = Math.min(...series.map(p => p.value));
+  const seriesMax = Math.max(...series.map(p => p.value));
+  const lwThreshold = seriesMin + 0.4 * (seriesMax - seriesMin);
+  const filteredLW = mergedLW.filter(lw => lw.value < lwThreshold);
+
+  // ── Step 3: Find HW as the maximum value between consecutive LW brackets ──
+  const extrema = [];
+
+  const findMax = (slice) => {
+    if (!slice.length) return null;
+    let best = slice[0];
+    for (const p of slice) if (p.value > best.value) best = p;
+    return { time: best.time, value: best.value, type: 'HW' };
+  };
+
+  if (filteredLW.length === 0) {
+    // No LW found — just find the global max as a single HW
+    const hw = findMax(series);
+    if (hw) extrema.push(hw);
+    return extrema;
+  }
+
+  // Data before the first LW — only add HW if it is a true interior peak
+  // (not just the starting/ending value of a descending/ascending edge)
+  const idx0 = series.findIndex(p => p.time >= filteredLW[0].time);
+  if (idx0 > 6) {
+    const beforeSlice = series.slice(0, idx0);
+    const hw = findMax(beforeSlice);
+    if (hw && hw.value - filteredLW[0].value > 0.4) {
+      const hwIdx = beforeSlice.findIndex(p => p.time.getTime() === hw.time.getTime());
+      if (hwIdx > 3 && hwIdx < beforeSlice.length - 3) extrema.push(hw);
+    }
+  }
+
+  // Between consecutive LW pairs
+  for (let i = 0; i < filteredLW.length; i++) {
+    extrema.push(filteredLW[i]);
+    if (i < filteredLW.length - 1) {
+      const lw1 = filteredLW[i], lw2 = filteredLW[i + 1];
+      const si = series.findIndex(p => p.time >= lw1.time);
+      const ei = series.findIndex(p => p.time >= lw2.time);
+      if (si >= 0 && ei > si) {
+        const hw = findMax(series.slice(si, ei + 1));
+        if (hw && hw.value - Math.max(lw1.value, lw2.value) > 0.4) extrema.push(hw);
+      }
+    }
+  }
+
+  // Data after the last LW — only add HW if it is a true interior peak
+  const lastLW = filteredLW[filteredLW.length - 1];
+  const idxLast = series.findIndex(p => p.time > lastLW.time);
+  if (idxLast >= 0 && series.length - idxLast > 6) {
+    const afterSlice = series.slice(idxLast);
+    const hw = findMax(afterSlice);
+    if (hw && hw.value - lastLW.value > 0.4) {
+      const hwIdx = afterSlice.findIndex(p => p.time.getTime() === hw.time.getTime());
+      if (hwIdx > 3 && hwIdx < afterSlice.length - 3) extrema.push(hw);
+    }
+  }
+
+  // Sort by time
+  extrema.sort((a, b) => a.time - b.time);
+  return extrema;
+}
+
+// ─── API ─────────────────────────────────────────────────────────────────────
+// Store fetched tidal data: { stationLoc: [{time, value, type}] }
+let tidalCache = {};
+
+async function fetchStationData(loc, date) {
+  if (tidalCache[loc]) return tidalCache[loc];
+
+  const d = new Date(date + 'T00:00:00Z');
+  const d2 = new Date(d.getTime() + 2 * 86400000); // +2 days to catch all HW on the day
+
+  const pad2 = n => String(n).padStart(2, '0');
+  const fmt = dt =>
+    `${dt.getUTCFullYear()}${pad2(dt.getUTCMonth()+1)}${pad2(dt.getUTCDate())}${pad2(dt.getUTCHours())}${pad2(dt.getUTCMinutes())}`;
+
+  const params = new URLSearchParams({
+    loc,
+    source: 'rws_prediction',
+    unit: 'waterlevel',
+    timezone: 'UTC',
+    tstart: fmt(d),
+    tstop: fmt(d2),
+  });
+
+  const url = `https://noos.matroos.rws.nl/direct/get_series.php?${params}`;
+
+  let text;
+  const lastErr = { msg: '' };
+
+  const tryFetch = async (fetchUrl, parseJson) => {
+    const resp = await fetch(fetchUrl, { signal: AbortSignal.timeout(10000) });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    if (parseJson) {
+      const j = await resp.json();
+      return j.contents || j.body || '';
+    }
+    return await resp.text();
+  };
+
+  // 1. Direct (works if the API ever adds CORS headers)
+  try { text = await tryFetch(url, false); } catch (e) { lastErr.msg = e.message; }
+
+  // 2. corsproxy.io — returns raw content
+  if (!text) {
+    try { text = await tryFetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, false); }
+    catch (e) { lastErr.msg = e.message; }
+  }
+
+  // 3. allorigins.win — wraps content in JSON
+  if (!text) {
+    try { text = await tryFetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, true); }
+    catch (e) { lastErr.msg = e.message; }
+  }
+
+  if (!text) throw new Error(`Kan geen getijdata ophalen voor ${loc}: ${lastErr.msg}`);
+
+  if (!text || text.includes('does not exist') || text.includes('error')) {
+    throw new Error(`Geen getijdata beschikbaar voor "${loc}"`);
+  }
+
+  const series = parseMatroosText(text);
+  if (series.length === 0) throw new Error(`Lege getijdata voor "${loc}"`);
+
+  const extrema = findTidalExtrema(series);
+  tidalCache[loc] = { series, extrema };
+  return tidalCache[loc];
+}
+
+// ─── DEPARTURE WINDOW CALCULATION ────────────────────────────────────────────
+// For a route, find all HW events on the selected date and compute departure windows
+function calcDepartureWindows(route, refExtrema, selectedDate) {
+  const dateStr = selectedDate; // YYYY-MM-DD
+  const dayStart = new Date(dateStr + 'T00:00:00+01:00'); // CET
+  const dayEnd = new Date(dateStr + 'T23:59:59+01:00');
+
+  // Get all HW events for this date from reference station (search ±1 day to find nearby HW)
+  const hwEvents = refExtrema.filter(e => e.type === 'HW');
+
+  const windows = [];
+
+  for (const hw of hwEvents) {
+    // Compute window start and end
+    const windowStart = addHours(hw.time, route.minHW);
+    const windowEnd = addHours(hw.time, route.maxHW);
+
+    // Only include windows that overlap with the calendar day
+    if (windowEnd < dayStart || windowStart > dayEnd) continue;
+
+    // Clamp to day
+    const clampedStart = windowStart < dayStart ? dayStart : windowStart;
+    const clampedEnd = windowEnd > dayEnd ? dayEnd : windowEnd;
+
+    windows.push({
+      hwTime: hw.time,
+      hwHeight: hw.value,
+      windowStart: clampedStart,
+      windowEnd: clampedEnd,
+      durationMin: Math.round((clampedEnd - clampedStart) / 60000),
+      isPartial: windowStart < dayStart || windowEnd > dayEnd,
+      // Best departure: ~HW-1h (often optimal for flowing tide assist)
+      bestDeparture: addHours(hw.time, route.minHW + (route.maxHW - route.minHW) * 0.3),
+    });
+  }
+
+  return windows;
+}
+
+// ─── MAIN FLOW ────────────────────────────────────────────────────────────────
+let manualHWTimes = {}; // fallback: {stationLoc: [Date]}
+
+async function planTrip() {
+  const dateVal = document.getElementById('date-input').value;
+  const portVal = document.getElementById('port-select').value;
+
+  if (!dateVal || !portVal) {
+    alert('Selecteer eerst een datum en vertrekhaven.');
+    return;
+  }
+
+  const dep = portById(portVal);
+  if (!dep) return;
+
+  tidalCache = {};
+  document.getElementById('status-area').innerHTML = '';
+
+  // Find all routes from this port and which reference stations we need
+  const myRoutes = ROUTES.filter(r => r.from === portVal);
+  if (myRoutes.length === 0) {
+    showStatus('error', `Geen routes gevonden vanuit ${dep.name}.`);
+    return;
+  }
+
+  const neededStations = [...new Set(myRoutes.map(r => r.refStation))];
+  // Also need the departure port's own reference station for displaying local HW
+  if (!neededStations.includes(dep.refStation)) neededStations.push(dep.refStation);
+
+  showStatus('loading', `Getijdata ophalen voor ${neededStations.length} station(s)...`);
+
+  const fetchedData = {};
+  const errors = [];
+
+  await Promise.allSettled(
+    neededStations.map(async loc => {
+      try {
+        fetchedData[loc] = await fetchStationData(loc, dateVal);
+      } catch (e) {
+        errors.push({ loc, error: e.message });
+      }
+    })
+  );
+
+  document.getElementById('status-area').innerHTML = '';
+
+  if (Object.keys(fetchedData).length === 0) {
+    // All fetches failed — show manual input
+    showManualInput(dep, myRoutes, neededStations, dateVal);
+    return;
+  }
+
+  renderResults(dep, myRoutes, fetchedData, errors, dateVal);
+}
+
+function showStatus(type, msg) {
+  const area = document.getElementById('status-area');
+  if (type === 'loading') {
+    area.innerHTML = `
+      <div class="status-loading">
+        <div class="spinner"></div>
+        <span>${msg}</span>
+      </div>`;
+  } else if (type === 'error') {
+    area.innerHTML = `
+      <div class="status-error">
+        <strong>⚠ Fout</strong>
+        ${msg}
+      </div>`;
+  }
+}
+
+function showManualInput(dep, routes, neededStations, dateVal) {
+  const area = document.getElementById('status-area');
+  const stationNames = {
+    denhelder: 'Den Helder', vlieland: 'Vlieland', harlingen: 'Harlingen',
+    lauwersoog: 'Lauwersoog', delfzijl: 'Delfzijl',
+  };
+
+  const inputs = neededStations.map(loc => `
+    <div class="hw-input-group">
+      <label>${stationNames[loc] || loc} — HW tijden (HH:MM)</label>
+      <input type="time" id="hw-${loc}-1" placeholder="1e HW" />
+      <input type="time" id="hw-${loc}-2" style="margin-top:4px" placeholder="2e HW" />
+    </div>`).join('');
+
+  area.innerHTML = `
+    <div class="status-error">
+      <strong>⚠ Getijdata kon niet worden opgehaald</strong>
+      <p>Dit kan een CORS-beperking zijn. Voer handmatig de HW-tijden in vanuit
+        <a href="https://noos.matroos.rws.nl" target="_blank" style="color:var(--sea)">Matroos</a>
+        of <a href="https://getij.rws.nl" target="_blank" style="color:var(--sea)">getij.rws.nl</a>.
+      </p>
+    </div>
+    <div class="manual-hw-section">
+      <h3>📋 Handmatige HW-tijden invoeren voor ${dateVal}</h3>
+      <div class="hw-inputs-grid">${inputs}</div>
+      <button class="btn-manual-calc" onclick="calcManual('${dep.id}', '${dateVal}')">
+        Bereken vertrektijden
+      </button>
+    </div>`;
+}
+
+function calcManual(depId, dateVal) {
+  const dep = portById(depId);
+  const myRoutes = ROUTES.filter(r => r.from === depId);
+  const neededStations = [...new Set(myRoutes.map(r => r.refStation))];
+  if (!neededStations.includes(dep.refStation)) neededStations.push(dep.refStation);
+
+  const fetchedData = {};
+  for (const loc of neededStations) {
+    const t1 = document.getElementById(`hw-${loc}-1`)?.value;
+    const t2 = document.getElementById(`hw-${loc}-2`)?.value;
+    const hwList = [];
+    for (const t of [t1, t2]) {
+      if (!t) continue;
+      const [h, m] = t.split(':').map(Number);
+      const dt = new Date(`${dateVal}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00+01:00`);
+      hwList.push({ time: dt, value: 1.2, type: 'HW' }); // height unknown
+    }
+    if (hwList.length > 0) {
+      fetchedData[loc] = { series: [], extrema: hwList };
+    }
+  }
+
+  if (Object.keys(fetchedData).length === 0) {
+    alert('Voer minimaal één HW-tijd in.');
+    return;
+  }
+
+  document.getElementById('status-area').innerHTML = '';
+  renderResults(dep, myRoutes, fetchedData, [], dateVal);
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function renderResults(dep, myRoutes, fetchedData, errors, dateVal) {
+  const main = document.querySelector('main');
+
+  // Remove old results
+  const old = document.getElementById('results-root');
+  if (old) old.remove();
+
+  const root = document.createElement('div');
+  root.id = 'results-root';
+  main.appendChild(root);
+
+  // ── Tidal overview ──
+  const localRef = dep.refStation;
+  const localData = fetchedData[localRef];
+  const depHWEvents = localData?.extrema?.filter(e => e.type === 'HW') || [];
+
+  let tidalHTML = '';
+  const stationNames = {
+    denhelder: 'Den Helder', vlieland: 'Vlieland', harlingen: 'Harlingen',
+    lauwersoog: 'Lauwersoog', delfzijl: 'Delfzijl',
+  };
+
+  const cells = Object.entries(fetchedData).map(([loc, data]) => {
+    const dayStart = new Date(dateVal + 'T00:00:00+01:00');
+    const dayEnd   = new Date(dateVal + 'T23:59:59+01:00');
+    const dayExtrema = data.extrema.filter(e => e.time >= dayStart && e.time <= dayEnd);
+
+    const alatOffset = STATION_ALAT[loc] || 0;
+    const entries = dayExtrema.map(e => {
+      let heightStr = '';
+      if (e.value != null) {
+        const nap = `${e.value >= 0 ? '+' : ''}${e.value.toFixed(2)}m NAP`;
+        const alatVal = e.value + alatOffset;
+        const alat = `+${alatVal.toFixed(2)}m ALAT`;
+        heightStr = `${nap} / ${alat}`;
+      }
+      return `<div class="hw-entry">
+        <span class="hw-time">${fmtTime(e.time)}</span>
+        <span class="hw-badge ${e.type === 'LW' ? 'lw-badge' : ''}">${e.type}</span>
+      </div>${heightStr ? `<div style="font-size:.75rem;color:var(--text-light);padding-left:0;margin-bottom:.3rem">${heightStr}</div>` : ''}`;
+    }).join('');
+
+    return `<div class="tidal-cell">
+      <div class="station-name">${stationNames[loc] || loc}</div>
+      ${entries || '<div style="color:#aaa;font-size:.8rem">geen data</div>'}
+    </div>`;
+  }).join('');
+
+  // Error notices
+  const errHtml = errors.map(e => `
+    <div style="background:#fff3cd;border-radius:6px;padding:.6rem 1rem;font-size:.83rem;color:#664d03;margin-bottom:.5rem">
+      ⚠ Data voor <strong>${stationNames[e.loc] || e.loc}</strong> niet beschikbaar — routes via dit station worden overgeslagen.
+    </div>`).join('');
+
+  // ── Route cards ──
+  const routeCards = myRoutes.map(route => {
+    const destPort = portById(route.to);
+    if (!destPort) return '';
+
+    const refData = fetchedData[route.refStation];
+    if (!refData) {
+      return `<div class="route-card closed">
+        <div class="route-card-header">
+          <div class="route-name">${dep.name} → ${destPort.name}
+            <span class="route-via">${route.via}</span>
+          </div>
+          <span class="route-status-badge">Geen data</span>
+        </div>
+        <div class="route-card-body"><p class="no-route">Geen getijdata beschikbaar voor referentiestation ${stationNames[route.refStation] || route.refStation}.</p></div>
+      </div>`;
+    }
+
+    const windows = calcDepartureWindows(route, refData.extrema, dateVal);
+
+    if (windows.length === 0) {
+      return `<div class="route-card closed">
+        <div class="route-card-header">
+          <div class="route-name">${dep.name} → ${destPort.name}
+            <span class="route-via">${route.via}</span>
+          </div>
+          <span class="route-status-badge">Niet mogelijk</span>
+        </div>
+        <div class="route-card-body">
+          <p class="no-route">Geen geschikte vertrektijden op ${fmtDateShort(new Date(dateVal))}. De vaarvensters vallen buiten de dag — vertrek de vorige of volgende dag.</p>
+        </div>
+      </div>`;
+    }
+
+    const isPartial = windows.every(w => w.isPartial);
+    const cardClass = isPartial ? 'partial' : '';
+    const statusText = isPartial ? 'Beperkt venster' : 'Mogelijk';
+
+    const windowRef = `HW ${stationNames[route.refStation] || route.refStation}`;
+    const windowRule = `${route.minHW >= 0 ? '+' : ''}${route.minHW}u tot ${route.maxHW >= 0 ? '+' : ''}${route.maxHW}u na HW`;
+
+    const stationAlat = STATION_ALAT[route.refStation] || 0;
+    const windowItems = windows.map(w => {
+      let hwHeightStr = '';
+      if (w.hwHeight != null) {
+        const nap = `${w.hwHeight >= 0 ? '+' : ''}${w.hwHeight.toFixed(2)}m NAP`;
+        const alat = `+${(w.hwHeight + stationAlat).toFixed(2)}m ALAT`;
+        hwHeightStr = ` (${nap} / ${alat})`;
+      }
+      const hwStr = `HW ${fmtTime(w.hwTime)}${hwHeightStr}`;
+      const durH = Math.floor(w.durationMin / 60);
+      const durM = w.durationMin % 60;
+      const durStr = durH > 0 ? `${durH}u${durM > 0 ? ` ${durM}m` : ''}` : `${durM}m`;
+      const best = w.bestDeparture >= w.windowStart && w.bestDeparture <= w.windowEnd
+        ? `<div class="best-window">⭐ Optimaal vertrek: <strong>${fmtTime(w.bestDeparture)}</strong> (vloed mee)</div>`
+        : '';
+      const partial = w.isPartial ? ' <em>(loopt door naar volgende dag)</em>' : '';
+      return `<li class="window-item">
+        <div class="window-times">
+          ${fmtTime(w.windowStart)} <span class="sep">→</span> ${fmtTime(w.windowEnd)}
+        </div>
+        <div class="window-detail">
+          <strong>${hwStr}</strong>${partial}<br>
+          Duur: ${durStr} · ref: ${windowRef}
+        </div>
+      </li>${best}`;
+    }).join('');
+
+    return `<div class="route-card ${cardClass}">
+      <div class="route-card-header">
+        <div class="route-name">
+          ${dep.name} <span style="color:var(--sea)">→</span> ${destPort.name}
+          <span class="route-via">via ${route.via}</span>
+        </div>
+        <span class="route-status-badge">${statusText}</span>
+      </div>
+      <div class="route-card-body">
+        <div style="font-size:.8rem;color:var(--text-light);margin-bottom:.8rem">
+          Vertrekvenster: <strong>${windowRule}</strong>
+        </div>
+        <ul class="window-list">${windowItems}</ul>
+      </div>
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="tidal-overview">
+      <div class="tidal-header">🌊 Getij op ${fmtDateShort(new Date(dateVal + 'T12:00:00'))} — referentiestations</div>
+      <div class="tidal-times-grid">${cells}</div>
+    </div>
+    ${errHtml}
+    <div class="results-section">
+      <h2>⛵ Mogelijke bestemmingen vanuit ${dep.name}</h2>
+      ${routeCards}
+    </div>
+    <div class="disclaimer">
+      <strong>⚠ Gebruik alleen als indicatie.</strong>
+      De getoonde vertrektijden zijn gebaseerd op benaderde gegevens uit de ANWB Almanak voor Watertoerisme.
+      Controleer altijd de actuele getijde- en weersverwachting via <a href="https://getij.rws.nl" target="_blank" style="color:rgba(255,255,255,.7)">getij.rws.nl</a>.
+      De makers aanvaarden geen verantwoordelijkheid voor navigatiebeslissingen op basis van deze tool.
+      Geldige kustvaartbewijs of vergelijkbare kwalificatie vereist voor de Waddenzee.
+    </div>`;
+
+  root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function init() {
+  // Populate port select
+  const sel = document.getElementById('port-select');
+  for (const p of PORTS) {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    sel.appendChild(opt);
+  }
+
+  // Default port
+  sel.value = 'denhelder';
+
+  // Default date = today (in Amsterdam time)
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+  document.getElementById('date-input').value = today;
+  document.getElementById('date-input').min = today;
+  // Allow up to 10 days ahead (prediction range)
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + 10);
+  document.getElementById('date-input').max = maxDate.toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+}
+
+init();
+</script>
+</body>
+</html>
