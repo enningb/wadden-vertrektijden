@@ -71,16 +71,15 @@ const ROUTES = [
   { from: 'ijmuiden', to: 'denhelder',      refStation: 'IJmuiden',     refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  4, via: 'Noordzee kust', comment: 'Vloed mee richting noorden; tijdvenster bij benadering.' },
   { from: 'ijmuiden', to: 'den-oever',      refStation: 'IJmuiden',     refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  4, via: 'Noordzee kust / Amsteldiep', comment: 'Tijdvenster bij benadering.' },
 
-  // ── Den Helder vertrek → kust ─────────────────────────────────────────────
-  { from: 'denhelder', to: 'ijmuiden',      refStation: 'denhelder',    refStartTide: 'HW', startOffset:  0, refEndTide: 'HW', endOffset:  6, via: 'Noordzee kust', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
-  { from: 'denhelder', to: 'scheveningen',  refStation: 'denhelder',    refStartTide: 'HW', startOffset:  0, refEndTide: 'HW', endOffset:  6, via: 'Noordzee kust', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
-
+ 
   // ── Den Oever vertrek ────────────────────────────────────────────────────
   { from: 'den-oever', to: 'denhelder',   refStation: 'den oever buiten', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  4, via: 'Amsteldiep / Texelstroom' },
   { from: 'den-oever', to: 'oudeschild',  refStation: 'den oever buiten', refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  3, via: 'Amsteldiep / Texelstroom' },
 
   // ── Den Helder vertrek ────────────────────────────────────────────────────
-  { from: 'denhelder', to: 'den-oever',   refStation: 'denhelder',        refStartTide: 'HW', startOffset: -4, refEndTide: 'HW', endOffset:  2, via: 'Texelstroom / Amsteldiep' },
+  { from: 'denhelder',         to: 'ijmuiden',      refStation: 'denhelder',    refStartTide: 'HW', startOffset:  1, refEndTide: 'HW', endOffset:  1, via: 'Schulpengat en Noordzee kust', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
+  { from: 'denhelder',         to: 'scheveningen',  refStation: 'denhelder',    refStartTide: 'HW', startOffset:  1, refEndTide: 'HW', endOffset:  1, via: 'Schulpengat en Noordzee kust', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: 'Eb mee richting zuiden; tijdvenster bij benadering.' },
+  { from: 'denhelder',         to: 'den-oever',          refStation: 'denhelder',  refStartTide: 'HW', startOffset: -4, refEndTide: 'HW', endOffset:  -2, via: 'Malzwin en Visjagersgaatje', source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: '' },
   { from: 'denhelder',         to: 'oudeschild',         refStation: 'denhelder',  refStartTide: 'LW', startOffset: -1, refEndTide: 'LW', endOffset:  3, via: 'Marsdiep / Texelstroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
   { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -2, refEndTide: 'HW', endOffset:  -1, via: 'Texelstroom / Vliestroom' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
   { from: 'denhelder',         to: 'oost-vlieland',      refStation: 'denhelder',  refStartTide: 'HW', startOffset: -6, refEndTide: 'HW', endOffset:  -6, via: 'Molengat (buitenom)' , source:'https://www.watersportalmanak.nl/artikel/vertrektijden-jachthavens', comment: ''},
